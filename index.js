@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// test 2
+// test 2 - 3
 app.post('/api/users', (req, res) => {
 	let username = req.body['username'];
 	User.create({ username: username }, function (err, user) {
@@ -35,7 +35,7 @@ app.post('/api/users', (req, res) => {
 	});
 });
 
-// test 3 get users
+// test 4 - 6 get users
 
 app.get('/api/users', (req, res) => {
 	User.find(function (err, users) {
@@ -43,6 +43,33 @@ app.get('/api/users', (req, res) => {
 		res.send(users);
 	});
 });
+
+// test 7 - 8 post exercises
+
+app.post('/api/users/:_id/exercises', (req, res) => {
+	const id = req.body[':_id'];
+	const { description, duration } = req.body;
+	let date = req.body.date
+		? new Date(req.body.date).toDateString()
+		: new Date().toDateString();
+	const exercise = { description, duration: +duration, date };
+	User.findByIdAndUpdate(
+		id,
+		{ $push: { log: exercise } },
+		{ new: true, strict: false },
+		function (err, user) {
+			if (err || !user) {
+				console.error(err);
+				res.send('Unable to find user with that ID');
+			} else {
+				res.json({"_id": id, username: user.username, ...exercise });
+			}
+		}
+	);
+});
+
+// test 9 - 14
+
 
 const listener = app.listen(process.env.PORT || 3000, () => {
 	console.log('Your app is listening on port ' + listener.address().port);
